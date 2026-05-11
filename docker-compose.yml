@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db-vivero:
+    image: postgres:15
+    container_name: postgres-vivero
+    environment:
+      # Estos datos deben coincidir con tu application.properties
+      - POSTGRES_USER=user_vivero
+      - POSTGRES_PASSWORD=password_vivero
+      - POSTGRES_DB=vivero_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # Esto crea una carpeta en tu Mac para que los datos no se borren
+      - ./postgres_data:/var/lib/postgresql/data
+    restart: always
