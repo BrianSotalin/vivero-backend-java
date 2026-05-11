@@ -13,17 +13,22 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   api-vivero:
     build: .
     container_name: spring-vivero
     ports:
-      - "${APP_PORT}:8080"
+      - "8080:8080"
     environment:
-      # Pasamos las variables al application.properties de Spring
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-vivero:5432/${DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
     depends_on:
-      - db-vivero
+      db-vivero:
+        condition: service_healthy
     restart: always
