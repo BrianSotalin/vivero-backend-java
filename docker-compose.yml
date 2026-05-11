@@ -5,13 +5,25 @@ services:
     image: postgres:15
     container_name: postgres-vivero
     environment:
-      # Estos datos deben coincidir con tu application.properties
-      - POSTGRES_USER=user_vivero
-      - POSTGRES_PASSWORD=password_vivero
-      - POSTGRES_DB=vivero_db
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
-      # Esto crea una carpeta en tu Mac para que los datos no se borren
       - ./postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  api-vivero:
+    build: .
+    container_name: spring-vivero
+    ports:
+      - "${APP_PORT}:8080"
+    environment:
+      # Pasamos las variables al application.properties de Spring
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-vivero:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db-vivero
     restart: always
