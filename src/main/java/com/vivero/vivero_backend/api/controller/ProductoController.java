@@ -3,11 +3,15 @@ package com.vivero.vivero_backend.api.controller;
 
 import com.vivero.vivero_backend.api.model.Producto;
 import com.vivero.vivero_backend.api.service.ProductoService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -22,7 +26,7 @@ public class ProductoController {
     }
 
     @PostMapping
-    public ResponseEntity<Producto> crear(@RequestBody Producto producto) {
+    public ResponseEntity<Producto> crear(@Valid @RequestBody Producto producto) {
         return ResponseEntity.ok(productoService.guardar(producto));
     }
 
@@ -47,7 +51,7 @@ public class ProductoController {
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
     			try {
 			productoService.eliminar(id);
-			return ResponseEntity.ok("Producto eliminado");
+			return ResponseEntity.ok(Map.of("message", "Producto eliminado"));
 		} catch (Exception e) {
 			return ResponseEntity.status(404).body(e.getMessage());
 		}

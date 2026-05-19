@@ -38,10 +38,13 @@ private JwtRequestFilter jwtRequestFilter;
  @Bean
  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
      http
+         .cors(org.springframework.security.config.Customizer.withDefaults())
          .csrf(csrf -> csrf.disable()) 
          .authorizeHttpRequests(auth -> auth
+        		    .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
         		    .requestMatchers("/api/auth/login").permitAll()    // SOLO el login es público
         		    .requestMatchers("/api/auth/register").authenticated() // El registro ahora pide TOKEN
+        		    .requestMatchers("/error").permitAll()
         		    .anyRequest().authenticated()
         		)
          .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -50,5 +53,18 @@ private JwtRequestFilter jwtRequestFilter;
      http.addFilterBefore(jwtRequestFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
      
      return http.build();
+ }
+//3. Definir la política de CORS para permitir a Angular (puerto 4200)
+ @Bean
+ public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+     configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
+     configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+     configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+     configuration.setAllowCredentials(true);
+     
+     org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+     source.registerCorsConfiguration("/**", configuration);
+     return source;
  }
 }
