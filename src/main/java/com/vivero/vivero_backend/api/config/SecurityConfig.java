@@ -3,6 +3,7 @@ package com.vivero.vivero_backend.api.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -44,6 +45,7 @@ private JwtRequestFilter jwtRequestFilter;
         		    .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
         		    .requestMatchers("/api/auth/login").permitAll()    // SOLO el login es público
         		    .requestMatchers("/api/auth/register").authenticated() // El registro ahora pide TOKEN
+        		    .requestMatchers(HttpMethod.PATCH, "/api/productos/**").permitAll()
         		    .requestMatchers("/error").permitAll()
         		    .anyRequest().authenticated()
         		)
@@ -59,8 +61,8 @@ private JwtRequestFilter jwtRequestFilter;
  public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
      org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
      configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
-     configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-     configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+     configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH" ,"DELETE", "OPTIONS"));
+     configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
      configuration.setAllowCredentials(true);
      
      org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
