@@ -39,12 +39,22 @@ public class ClienteService {
         clienteRepository.deleteById(id);
     }
 
-    // Editar solo el teléfono (La lógica que pediste)
-    public Cliente actualizarTelefono(Long id, String nuevoTelefono) {
-        Cliente cliente = clienteRepository.findById(id)
+ // Editar solo el teléfono y el email (Lógica actualizada)
+    public Cliente actualizarParcial(Long id, Cliente datosNuevos) {
+        Cliente clienteExistente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
         
-        cliente.setTelefono(nuevoTelefono);
-        return clienteRepository.save(cliente);
+        // Si el frontend envió un teléfono nuevo, lo actualizamos
+        if (datosNuevos.getTelefono() != null) {
+            clienteExistente.setTelefono(datosNuevos.getTelefono());
+        }
+        
+        // Si el frontend envió un email nuevo, lo actualizamos
+        if (datosNuevos.getEmail() != null) {
+            clienteExistente.setEmail(datosNuevos.getEmail());
+        }
+        
+        // El nombre no se toca, se queda intacto como estaba en la base de datos
+        return clienteRepository.save(clienteExistente);
     }
 }

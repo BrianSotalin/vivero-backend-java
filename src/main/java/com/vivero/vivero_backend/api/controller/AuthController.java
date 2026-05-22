@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.vivero.vivero_backend.api.dto.AuthResponses; // Verifica si es AuthResponse o AuthResponses
 import com.vivero.vivero_backend.api.dto.LoginRequest;
-import com.vivero.vivero_backend.api.model.Usuario;
+
 import com.vivero.vivero_backend.api.service.AuthService;
 
 @RestController
@@ -30,15 +30,6 @@ public class AuthController {
             return ResponseEntity.status(401).body("Error: " + e.getMessage());
         }
     }
- // Añade este método a tu AuthController.java
-    @PostMapping("/register")
-    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
-        try {
-            Usuario nuevoUsuario = authService.registrar(usuario);
-            return ResponseEntity.ok("Usuario registrado con éxito: " + nuevoUsuario.getUsername());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error al registrar: " + e.getMessage());
-        }
-    }
+
 
 }

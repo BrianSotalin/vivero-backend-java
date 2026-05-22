@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -46,11 +47,11 @@ public class ClienteController {
 			return ResponseEntity.status(500).build();
 		}
     }
- // Endpoint para editar solo el teléfono
-    @PatchMapping("/{id}/telefono")
-    public ResponseEntity<?> editarTelefono(@PathVariable Long id, @RequestBody Cliente datos) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> editarParcial(@PathVariable Long id, @RequestBody Cliente cliente) {
         try {
-            Cliente actualizado = clienteService.actualizarTelefono(id, datos.getTelefono());
+            // Llamamos a la nueva lógica que acabamos de crear
+            Cliente actualizado = clienteService.actualizarParcial(id, cliente);
             return ResponseEntity.ok(actualizado);
         } catch (Exception e) {
             return ResponseEntity.status(404).body(e.getMessage());
@@ -61,7 +62,7 @@ public class ClienteController {
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         try {
             clienteService.eliminar(id);
-            return ResponseEntity.ok("Cliente eliminado con éxito");
+            return ResponseEntity.ok(Map.of("message", "Cliente eliminado con éxito"));
         } catch (Exception e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }

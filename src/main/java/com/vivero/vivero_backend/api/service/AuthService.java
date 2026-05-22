@@ -34,19 +34,5 @@ public class AuthService {
             throw new RuntimeException("Credenciales incorrectas");
         }
     }
- // Añade este método a tu AuthService.java
-    public Usuario registrar(Usuario usuario) {
-        // 1. Encriptar la contraseña antes de guardar
-        String passwordEncriptada = passwordEncoder.encode(usuario.getPassword());
-        usuario.setPassword(passwordEncriptada);
-        
-        // 2. Guardar en la base de datos
-        return usuarioRepository.save(usuario);
-    }
-    public void eliminarUsuario(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new RuntimeException("El usuario con ID " + id + " no existe.");
-        }
-        usuarioRepository.deleteById(id);
-    }
+
 }
