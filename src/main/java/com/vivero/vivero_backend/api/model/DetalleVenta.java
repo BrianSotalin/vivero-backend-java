@@ -24,4 +24,5 @@ public class DetalleVenta {
 
     private Integer cantidad;
     private Double precio;
+    
 }
