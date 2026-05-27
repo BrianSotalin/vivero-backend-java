@@ -1,6 +1,7 @@
 package com.vivero.vivero_backend.api.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ public class VentaController {
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         try {
             ventaService.eliminarVenta(id);
-            return ResponseEntity.ok("Venta eliminada correctamente y stock de estadísticas actualizado.");
+            return ResponseEntity.ok(Map.of("message","Venta eliminada correctamente."));
         } catch (Exception e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
