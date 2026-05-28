@@ -34,3 +34,4 @@ build/
 .env
 postgres_data/
 /postgres_data/
+src/main/resources/application-dev.properties
