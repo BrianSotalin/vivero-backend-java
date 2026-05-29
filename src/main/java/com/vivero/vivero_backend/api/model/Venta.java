@@ -24,7 +24,7 @@ public class Venta {
 
     private LocalDateTime fecha = LocalDateTime.now();
     private Double total;
-    private int estado; // 0: Pagado, 1: Deuda, 2: Abonado
+    private Integer estado; // 0: Pagado, 1: Deuda, 2: Abonado
     private Double abono; // Solo se usa si estado = 2 (Abonado)
 
     // Es mejor inicializar la lista como un ArrayList vacío

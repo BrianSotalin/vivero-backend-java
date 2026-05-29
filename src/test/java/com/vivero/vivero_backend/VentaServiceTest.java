@@ -139,4 +139,42 @@ class VentaServiceTest {
         verify(productRepository, times(1)).findById(1L);
         verify(ventaRepository, times(1)).save(ventaAbonada);
     }
+    @Test
+    void debeActualizarEstadoAAbonadoCuandoSeAgregaAbonoConEstadoDeuda() {
+        // 1. ARRANGE
+        // Venta existente en BD con estado 1 (Deuda)
+        Venta ventaExistente = new Venta();
+        ventaExistente.setId(1L);
+        ventaExistente.setEstado(1); // DEUDA
+        ventaExistente.setAbono(0.0);
+        ventaExistente.setTotal(30.00);
+        ventaExistente.setDetalles(new ArrayList<>());
+
+        // Datos que llegan en el PATCH
+        Venta datosNuevos = new Venta();
+        datosNuevos.setEstado(2);      // Cambia a ABONADO
+        datosNuevos.setAbono(15.00);   // Agrega abono de $15
+
+        // Simulamos que la venta existe en la BD
+        when(ventaRepository.findById(1L)).thenReturn(Optional.of(ventaExistente));
+        when(ventaRepository.save(any(Venta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // 2. ACT
+        Venta resultado = ventaService.actualizarVenta(1L, datosNuevos);
+
+        // 3. ASSERT
+        assertNotNull(resultado);
+
+        // El estado debe haber cambiado de 1 (Deuda) a 2 (Abonado)
+        assertEquals(2, resultado.getEstado(), "El estado debería ser 2 (Abonado)");
+
+        // El abono debe haberse guardado correctamente
+        assertEquals(15.00, resultado.getAbono(), "El abono debería ser 15.00");
+
+        // El total no debe cambiar, solo el abono
+        assertEquals(30.00, resultado.getTotal(), "El total no debería cambiar");
+
+        verify(ventaRepository, times(1)).findById(1L);
+        verify(ventaRepository, times(1)).save(any(Venta.class));
+    }
 }

@@ -64,6 +64,21 @@ public class VentaService {
             ventaExistente.setFecha(datosNuevos.getFecha());
         }
 
+        // 3. Actualizar Estado si se envía (0=Pagado, 1=Deuda, 2=Abonado)
+        if (datosNuevos.getEstado() >= 0) {
+            ventaExistente.setEstado(datosNuevos.getEstado());
+
+            // Si cambia a Pagado o Deuda, limpiamos el abono
+            if (datosNuevos.getEstado() == 0 || datosNuevos.getEstado() == 1) {
+                ventaExistente.setAbono(0.0);
+            }
+        }
+
+        // 4. Actualizar Abono solo si estado es 2 (Abonado)
+        if (datosNuevos.getEstado() == 2 && datosNuevos.getAbono() != null) {
+            ventaExistente.setAbono(datosNuevos.getAbono());
+        }
+
         // 3. Actualizar Detalles (si se envían, reemplazamos los anteriores)
         if (datosNuevos.getDetalles() != null && !datosNuevos.getDetalles().isEmpty()) {
             
