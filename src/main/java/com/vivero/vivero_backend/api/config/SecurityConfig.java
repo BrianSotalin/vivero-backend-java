@@ -1,6 +1,7 @@
 package com.vivero.vivero_backend.api.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -56,17 +57,20 @@ private JwtRequestFilter jwtRequestFilter;
      
      return http.build();
  }
-//3. Definir la política de CORS para permitir a Angular (puerto 4200)
+//3. Definir la política de CORS 
+ @Value("${cors.allowed-origins}")
+ private String allowedOrigins;
+ 
  @Bean
  public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
-     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-     configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
-     configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH" ,"DELETE", "OPTIONS"));
-     configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
-     configuration.setAllowCredentials(true);
-     
-     org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
-     source.registerCorsConfiguration("/**", configuration);
-     return source;
- }
+	    org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+	    configuration.setAllowedOrigins(java.util.List.of(allowedOrigins.split(",")));
+	    configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+	    configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+	    configuration.setAllowCredentials(true);
+
+	    org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", configuration);
+	    return source;
+	}
 }
