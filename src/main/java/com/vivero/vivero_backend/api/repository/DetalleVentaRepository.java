@@ -16,4 +16,11 @@ public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long
 	           "GROUP BY d.producto.id, d.producto.producto " +
 	           "ORDER BY total DESC")
 	    List<Object[]> encontrarProductoMasVendido();
+	 // Nueva query limitada a top 5
+	    @Query("SELECT d.producto.producto, SUM(d.cantidad) as total " +
+	           "FROM DetalleVenta d " +
+	           "GROUP BY d.producto.id, d.producto.producto " +
+	           "ORDER BY total DESC " +
+	           "LIMIT 5")
+	    List<Object[]> encontrarTop5ProductosMasVendidos();
 }

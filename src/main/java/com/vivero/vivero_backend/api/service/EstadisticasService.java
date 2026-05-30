@@ -1,6 +1,8 @@
 package com.vivero.vivero_backend.api.service;
 
 import com.vivero.vivero_backend.api.dto.DashboardDTO;
+import com.vivero.vivero_backend.api.dto.ProductoVendidoDTO;
+import com.vivero.vivero_backend.api.dto.VentasPorMesDTO;
 import com.vivero.vivero_backend.api.repository.DetalleVentaRepository;
 import com.vivero.vivero_backend.api.repository.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +44,21 @@ public class EstadisticasService {
             nombreProducto, 
             cantidadVendida
         );
+    }
+    public List<VentasPorMesDTO> obtenerVentasPorMes() {
+        List<Object[]> resultados = ventaRepository.contarVentasPorMes();
+        return resultados.stream().map(row -> new VentasPorMesDTO(
+            ((Number) row[0]).intValue(),  // mes
+            ((Number) row[1]).intValue(),  // año
+            ((Number) row[2]).longValue()  // cantidad
+        )).toList();
+    }
+
+    public List<ProductoVendidoDTO> obtenerTop5Productos() {
+        List<Object[]> resultados = detalleVentaRepository.encontrarTop5ProductosMasVendidos();
+        return resultados.stream().map(row -> new ProductoVendidoDTO(
+            (String) row[0],
+            ((Number) row[1]).longValue()
+        )).toList();
     }
 }

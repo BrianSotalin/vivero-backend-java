@@ -20,4 +20,9 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     
     @Query("SELECT SUM(v.total) FROM Venta v")
     Double sumarTotalVentas();
+    @Query("SELECT MONTH(v.fecha), YEAR(v.fecha), COUNT(v) " +
+    	       "FROM Venta v " +
+    	       "GROUP BY YEAR(v.fecha), MONTH(v.fecha) " +
+    	       "ORDER BY YEAR(v.fecha), MONTH(v.fecha)")
+    	List<Object[]> contarVentasPorMes();
 }
