@@ -19,11 +19,16 @@ public class JwtUtil {
     public String generateTokenJWT(Usuario usuario) {
         return Jwts.builder()
                 .setSubject(usuario.getUsername())
-                //.claim("rol", usuario.getRol())
+                .claim("rol", usuario.getRol()) // ← descomenta esto
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(KEY)
                 .compact();
+    }
+
+    // Añade este método nuevo
+    public String extractRol(String token) {
+        return (String) extractAllClaims(token).get("rol");
     }
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();

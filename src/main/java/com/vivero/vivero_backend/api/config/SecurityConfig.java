@@ -43,11 +43,24 @@ private JwtRequestFilter jwtRequestFilter;
          .cors(org.springframework.security.config.Customizer.withDefaults())
          .csrf(csrf -> csrf.disable()) 
          .authorizeHttpRequests(auth -> auth
-        		    .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-        		    .requestMatchers("/api/auth/login").permitAll()    // SOLO el login es público
-        		    .requestMatchers("/api/auth/register").authenticated() // El registro ahora pide TOKEN
-        		    .requestMatchers(HttpMethod.PATCH, "/api/productos/**").permitAll()
+        		    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+        		    .requestMatchers("/api/auth/login").permitAll()
         		    .requestMatchers("/error").permitAll()
+
+        		    // Solo ADMIN puede gestionar usuarios
+        		    .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+
+        		    // ADMIN y USER pueden ver estadísticas y gestionar productos/clientes
+        		    .requestMatchers("/api/estadisticas/**").hasAnyRole("ADMIN", "USER")
+        		    .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "USER")
+        		    .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "USER")
+
+        		    // Ventas: todos los roles pueden acceder
+        		    .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "USER", "EMPLOYEE")
+
+        		    // Registro solo ADMIN
+        		    .requestMatchers("/api/auth/register").hasRole("ADMIN")
+
         		    .anyRequest().authenticated()
         		)
          .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
