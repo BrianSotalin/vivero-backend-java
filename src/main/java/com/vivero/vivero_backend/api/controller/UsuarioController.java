@@ -44,23 +44,29 @@ public class UsuarioController {
 			return ResponseEntity.status(404).body(e.getMessage());
 		}
 	}
+	
 	@PostMapping
-	public ResponseEntity<Usuario> crear(@RequestBody Usuario usuario) {
-		try {
-			Usuario nuevoUsuario = userService.create(usuario);
-			return ResponseEntity.ok(nuevoUsuario);
-		} catch (Exception e) {
-			return ResponseEntity.status(500).build();
-		}
+	public ResponseEntity<?> crear(@RequestBody Usuario usuario) {
+	    try {
+	        Usuario nuevoUsuario = userService.create(usuario);
+	        return ResponseEntity.ok(nuevoUsuario);
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.status(400).body(Map.of("message", e.getMessage()));
+	    } catch (Exception e) {
+	        return ResponseEntity.status(500).body(Map.of("message", "Error interno del servidor."));
+	    }
 	}
+
 	@PatchMapping("/{id}")
-	public ResponseEntity<?> editarParcial(@PathVariable Long id, @RequestBody Usuario usuario){
-		try {
-			Usuario actualizado = userService.updateUserRoleAndResetPassword(id, usuario.getRol(),usuario.getPassword());
-			return ResponseEntity.ok(actualizado);
-		} catch (Exception e) {
-			return ResponseEntity.status(404).body(e.getMessage());
-		}
+	public ResponseEntity<?> editarParcial(@PathVariable Long id, @RequestBody Usuario usuario) {
+	    try {
+	        Usuario actualizado = userService.updateUserRoleAndResetPassword(id, usuario.getRol(), usuario.getPassword());
+	        return ResponseEntity.ok(actualizado);
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.status(400).body(Map.of("message", e.getMessage()));
+	    } catch (Exception e) {
+	        return ResponseEntity.status(404).body(Map.of("message", e.getMessage()));
+	    }
 	}
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> eliminar(@PathVariable Long id) {
