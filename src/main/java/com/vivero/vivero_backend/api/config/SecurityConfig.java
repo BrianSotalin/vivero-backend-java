@@ -46,6 +46,12 @@ private JwtRequestFilter jwtRequestFilter;
         		    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
         		    .requestMatchers("/api/auth/login").permitAll()
         		    .requestMatchers("/error").permitAll()
+        		    
+        		    // Permitir acceso a Swagger UI sin autenticación
+        		    .requestMatchers("/swagger-ui/**").permitAll()
+        		    .requestMatchers("/swagger-ui.html").permitAll()
+        		    .requestMatchers("/v3/api-docs/**").permitAll()
+        		    .requestMatchers("/v3/api-docs").permitAll()
 
         		    // Solo ADMIN puede gestionar usuarios
         		    .requestMatchers("/api/usuarios/**").hasRole("ADMIN")

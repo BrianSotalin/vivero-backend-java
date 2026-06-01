@@ -9,14 +9,33 @@ import com.vivero.vivero_backend.api.dto.LoginRequest;
 
 import com.vivero.vivero_backend.api.service.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:4200")
+@Tag(name = "Autenticación", description = "Endpoints para login y gestión de sesión")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Autentica al usuario con username y password. Devuelve un token JWT válido por 24 horas."
+        )
+        @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login exitoso, retorna JWT",
+                content = @Content(schema = @Schema(implementation = AuthResponses.class))),
+            @ApiResponse(responseCode = "401", description = "Credenciales incorrectas",
+                content = @Content)
+        })
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
