@@ -1,5 +1,6 @@
 package com.vivero.vivero_backend.api.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -143,5 +144,19 @@ public class VentaController {
     @GetMapping("/cliente/{clienteId}")
     public List<Venta> listarPorCliente(@PathVariable Long clienteId) {
         return ventaService.listarPorCliente(clienteId);
+    }
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<Map<String, String>> obtenerPdfVenta(@PathVariable Long id) {
+        try {
+            String base64Pdf = ventaService.generarPdfVentaBase64(id);
+            
+            Map<String, String> respuesta = new HashMap<>();
+            respuesta.put("nombreArchivo", "factura_venta_" + id + ".pdf");
+            respuesta.put("base64", base64Pdf);
+            
+            return ResponseEntity.ok(respuesta);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

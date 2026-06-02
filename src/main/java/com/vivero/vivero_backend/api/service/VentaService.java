@@ -2,10 +2,25 @@ package com.vivero.vivero_backend.api.service;
 
 
 
+import java.io.ByteArrayOutputStream;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 
 import com.vivero.vivero_backend.api.model.DetalleVenta;
 import com.vivero.vivero_backend.api.model.Producto;
@@ -132,5 +147,137 @@ public class VentaService {
 
     public List<Venta> listarPorCliente(Long clienteId) {
         return ventaRepository.findByClienteId(clienteId);
+    }
+    /**
+     * Genera el PDF de una venta y lo retorna codificado en un String Base64.
+     */
+    public String generarPdfVentaBase64(Long id) {
+        Venta venta = obtenerPorId(id);
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document document = new Document(); // Tamaño A4 por defecto
+        
+        try {
+            PdfWriter.getInstance(document, baos);
+            document.open();
+            
+            // Fuentes
+            Font fuenteTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+            Font fuenteSubtitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            Font fuenteNormal = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font fuenteNegrita = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            
+            // --- ENCABEZADO ---
+            Paragraph titulo = new Paragraph("COMPROBANTE DE VENTA", fuenteTitulo);
+            titulo.setAlignment(Element.ALIGN_CENTER);
+            titulo.setSpacingAfter(15);
+            document.add(titulo);
+            
+            // Tabla de información general (Vivero vs Factura)
+            PdfPTable tablaEncabezado = new PdfPTable(2);
+            tablaEncabezado.setWidthPercentage(100);
+            
+            PdfPCell celdaIzquierda = new PdfPCell(new Phrase("VIVERO LA VEGA\nDirección: Santo Domingo\nContacto: lavega@vivero.com", fuenteNormal));
+            celdaIzquierda.setBorder(PdfPCell.NO_BORDER);
+            
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String fechaFormateada = venta.getFecha().format(formatter);
+            
+            PdfPCell celdaDerecha = new PdfPCell(new Phrase(
+                "Código Venta: " + venta.getCodigo() + "\n" +
+                "Fecha: " + fechaFormateada, fuenteNormal
+            ));
+            celdaDerecha.setBorder(PdfPCell.NO_BORDER);
+            celdaDerecha.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            
+            tablaEncabezado.addCell(celdaIzquierda);
+            tablaEncabezado.addCell(celdaDerecha);
+            tablaEncabezado.setSpacingAfter(20);
+            document.add(tablaEncabezado);
+            
+            // --- DATOS DEL CLIENTE ---
+            Paragraph tituloCliente = new Paragraph("Datos del Cliente", fuenteSubtitulo);
+            tituloCliente.setSpacingAfter(5);
+            document.add(tituloCliente);
+            
+            String nombreCliente = (venta.getCliente() != null) ? venta.getCliente().getNombre() : "Público General";
+            // Si tu entidad cliente tiene más datos (ej: teléfono o RFC), agrégalos aquí
+            Paragraph datosCliente = new Paragraph("Nombre / Razón Social: " + nombreCliente, fuenteNormal);
+            datosCliente.setSpacingAfter(20);
+            document.add(datosCliente);
+            
+            // --- TABLA DE DETALLES ---
+            PdfPTable tablaDetalles = new PdfPTable(4); // 4 Columnas
+            tablaDetalles.setWidthPercentage(100);
+            tablaDetalles.setWidths(new float[]{40f, 15f, 20f, 25f}); // Anchos relativos
+            
+            // Cabeceras
+            String[] cabeceras = {"Producto", "Cant.", "Precio Unit.", "Subtotal"};
+            for (String cabecera : cabeceras) {
+                PdfPCell cell = new PdfPCell(new Phrase(cabecera, fuenteNegrita));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setPadding(5);
+                tablaDetalles.addCell(cell);
+            }
+            
+            // Filas de productos
+            for (DetalleVenta detalle : venta.getDetalles()) {
+                String nombreProd = (detalle.getProducto() != null) ? detalle.getProducto().getProducto() : "Producto Desconocido";
+                double subtotal = detalle.getCantidad() * detalle.getPrecio();
+                
+                tablaDetalles.addCell(new PdfPCell(new Phrase(nombreProd, fuenteNormal)));
+                
+                PdfPCell cellCant = new PdfPCell(new Phrase(String.valueOf(detalle.getCantidad()), fuenteNormal));
+                cellCant.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tablaDetalles.addCell(cellCant);
+                
+                PdfPCell cellPrecio = new PdfPCell(new Phrase(String.format("$%.2f", detalle.getPrecio()), fuenteNormal));
+                cellPrecio.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                tablaDetalles.addCell(cellPrecio);
+                
+                PdfPCell cellSub = new PdfPCell(new Phrase(String.format("$%.2f", subtotal), fuenteNormal));
+                cellSub.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                tablaDetalles.addCell(cellSub);
+            }
+            
+            tablaDetalles.setSpacingAfter(15);
+            document.add(tablaDetalles);
+            
+            // --- TOTALES Y ESTADOS ---
+            PdfPTable tablaTotales = new PdfPTable(2);
+            tablaTotales.setWidthPercentage(100);
+            tablaTotales.setWidths(new float[]{60f, 40f});
+            
+            // Estado del pago
+            String txtEstado = "Estado: ";
+            if (venta.getEstado() == 0) txtEstado += "PAGADO";
+            else if (venta.getEstado() == 1) txtEstado += "DEUDA PENDIENTE";
+            else if (venta.getEstado() == 2) txtEstado += "ABONADO (Restante: $" + String.format("%.2f", (venta.getTotal() - venta.getAbono())) + ")";
+            
+            PdfPCell celdaEstado = new PdfPCell(new Phrase(txtEstado, fuenteNegrita));
+            celdaEstado.setBorder(PdfPCell.NO_BORDER);
+            
+            // Bloque de importes numéricos
+            String desgloseTotales = "Total: " + String.format("$%.2f", venta.getTotal());
+            if (venta.getEstado() == 2 && venta.getAbono() != null) {
+                desgloseTotales += "\nMonto Abonado: " + String.format("$%.2f", venta.getAbono());
+            }
+            
+            PdfPCell celdaTotalValores = new PdfPCell(new Phrase(desgloseTotales, fuenteNegrita));
+            celdaTotalValores.setBorder(PdfPCell.NO_BORDER);
+            celdaTotalValores.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            
+            tablaTotales.addCell(celdaEstado);
+            tablaTotales.addCell(celdaTotalValores);
+            document.add(tablaTotales);
+            
+        } catch (DocumentException e) {
+            throw new RuntimeException("Error al estructurar el PDF", e);
+        } finally {
+            document.close();
+        }
+        
+        // Convertimos el flujo de bytes del PDF generado a String Base64
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 }
