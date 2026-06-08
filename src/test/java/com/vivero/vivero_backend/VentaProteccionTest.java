@@ -4,6 +4,7 @@ import com.vivero.vivero_backend.api.model.*;
 import com.vivero.vivero_backend.api.repository.*;
 import com.vivero.vivero_backend.api.service.ClienteService;
 import com.vivero.vivero_backend.api.service.ProductoService;
+import com.vivero.vivero_backend.api.service.VentaService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,8 +35,14 @@ public class VentaProteccionTest {
 
     @InjectMocks
     private ClienteService clienteService;
+    
     @InjectMocks
     private ProductoService productoService;
+    
+    @InjectMocks
+    private VentaService ventaService;
+    
+    
 
     // ─── CLIENTE ────────────────────────────────────────────────────
 
@@ -96,6 +105,52 @@ public class VentaProteccionTest {
 
         assertDoesNotThrow(() -> productoService.eliminar(productoId));
         verify(productoRepository).deleteById(productoId);
+    }
+    
+    // ─── VENTA ──────────────────────────────────────────────────────
+    
+    @Test
+    void debeGuardarVentaConFechaPersonalizada() {
+        // Arrange
+        LocalDateTime fechaPersonalizada = LocalDateTime.of(2024, 1, 15, 10, 30);
+
+        Producto producto = new Producto();
+        producto.setId(1L);
+        producto.setPrecioVenta(50.0);
+
+        DetalleVenta detalle = new DetalleVenta();
+        detalle.setProducto(producto);
+        detalle.setCantidad(2);
+        //detalle.setPrecio(50.0);
+
+        Venta venta = new Venta();
+        venta.setFecha(fechaPersonalizada);
+        venta.setDetalles(new ArrayList<>(List.of(detalle)));
+
+        when(ventaRepository.count()).thenReturn(0L);
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        when(ventaRepository.save(any(Venta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        Venta resultado = ventaService.registrarVenta(venta);
+
+        // Assert
+        assertEquals(fechaPersonalizada, resultado.getFecha());
+        assertNotEquals(LocalDateTime.now().getDayOfMonth(), resultado.getFecha().getDayOfMonth());
+    }
+    @Test
+    void debeUsarFechaActualSiNoSeEnviaFecha() {
+        Venta venta = new Venta();
+        venta.setFecha(null);
+        venta.setDetalles(new ArrayList<>());
+
+        when(ventaRepository.count()).thenReturn(0L);
+        when(ventaRepository.save(any(Venta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Venta resultado = ventaService.registrarVenta(venta);
+
+        assertNotNull(resultado.getFecha());
+        assertEquals(LocalDateTime.now().getDayOfMonth(), resultado.getFecha().getDayOfMonth());
     }
 
 }

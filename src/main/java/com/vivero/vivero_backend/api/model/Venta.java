@@ -22,7 +22,7 @@ public class Venta {
     @JoinColumn(name = "id_cliente")
     private Cliente cliente;
 
-    private LocalDateTime fecha = LocalDateTime.now();
+    private LocalDateTime fecha;
     private Double total;
     private Integer estado; // 0: Pagado, 1: Deuda, 2: Abonado
     private Double abono; // Solo se usa si estado = 2 (Abonado)

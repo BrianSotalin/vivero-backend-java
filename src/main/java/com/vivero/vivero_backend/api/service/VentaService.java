@@ -3,6 +3,7 @@ package com.vivero.vivero_backend.api.service;
 
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
@@ -45,6 +46,10 @@ public class VentaService {
         venta.setCodigo(String.format("%04d", count));
 
         double totalCalculado = 0.0;
+        
+        if (venta.getFecha() == null) {
+            venta.setFecha(LocalDateTime.now());
+        }
 
         if (venta.getDetalles() != null) {
             for (DetalleVenta detalle : venta.getDetalles()) {
