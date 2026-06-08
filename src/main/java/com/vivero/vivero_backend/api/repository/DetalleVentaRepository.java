@@ -23,4 +23,6 @@ public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long
 	           "ORDER BY total DESC " +
 	           "LIMIT 5")
 	    List<Object[]> encontrarTop5ProductosMasVendidos();
+	    // Método para verificar si existen detalles de venta asociados a un producto específico
+	    boolean existsByProductoId(Long productoId);
 }

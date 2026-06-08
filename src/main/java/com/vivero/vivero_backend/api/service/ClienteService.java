@@ -2,7 +2,9 @@ package com.vivero.vivero_backend.api.service;
 
 
 import com.vivero.vivero_backend.api.model.Cliente;
+import com.vivero.vivero_backend.api.model.Venta;
 import com.vivero.vivero_backend.api.repository.ClienteRepository;
+import com.vivero.vivero_backend.api.repository.VentaRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,10 @@ public class ClienteService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+    
+    @Autowired
+    private VentaRepository ventaRepository;
+
 
     // Listar todos
     public List<Cliente> listarTodos() {
@@ -36,6 +42,10 @@ public class ClienteService {
         if (!clienteRepository.existsById(id)) {
             throw new RuntimeException("Cliente no encontrado con id: " + id);
         }
+        List<Venta> ventas = ventaRepository.findByClienteId(id);
+        if (!ventas.isEmpty()) {	
+			throw new RuntimeException("No se puede eliminar el cliente con id: " + id + " porque tiene ventas asociadas.");
+		}
         clienteRepository.deleteById(id);
     }
 
