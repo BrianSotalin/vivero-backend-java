@@ -112,7 +112,7 @@ public class VentaProteccionTest {
     @Test
     void debeGuardarVentaConFechaPersonalizada() {
         // Arrange
-        LocalDateTime fechaPersonalizada = LocalDateTime.of(2024, 1, 15, 10, 30);
+        LocalDateTime fechaPersonalizada = LocalDateTime.of(LocalDateTime.now().getYear(), 1, 15, 10, 30);
 
         Producto producto = new Producto();
         producto.setId(1L);
@@ -151,6 +151,35 @@ public class VentaProteccionTest {
 
         assertNotNull(resultado.getFecha());
         assertEquals(LocalDateTime.now().getDayOfMonth(), resultado.getFecha().getDayOfMonth());
+    }
+    @Test
+    void noDebePermitirFechaFutura() {
+        Venta venta = new Venta();
+        venta.setFecha(LocalDateTime.now().plusDays(1));
+        venta.setDetalles(new ArrayList<>());
+
+        when(ventaRepository.count()).thenReturn(0L);
+        //when(ventaRepository.save(any(Venta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> ventaService.registrarVenta(venta));
+
+        assertEquals("La fecha no puede ser superior a la fecha actual", ex.getMessage());
+    }
+
+    @Test
+    void noDebePermitirFechaDelAñoPasado() {
+        Venta venta = new Venta();
+        venta.setFecha(LocalDateTime.of(LocalDateTime.now().getYear() - 1, 1, 1, 0, 0).minusDays(1));
+        venta.setDetalles(new ArrayList<>());
+
+        when(ventaRepository.count()).thenReturn(0L);
+        //when(ventaRepository.save(any(Venta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> ventaService.registrarVenta(venta));
+
+        assertEquals("La fecha no puede ser del año pasado", ex.getMessage());
     }
 
 }

@@ -47,8 +47,19 @@ public class VentaService {
 
         double totalCalculado = 0.0;
         
-        if (venta.getFecha() == null) {
-            venta.setFecha(LocalDateTime.now());
+        // Validación de fecha
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime inicioAñoPasado = LocalDateTime.of(ahora.getYear() - 1, 1, 1, 0, 0);
+        
+        if (venta.getFecha() != null) {
+            if (venta.getFecha().isAfter(ahora)) {
+                throw new RuntimeException("La fecha no puede ser superior a la fecha actual");
+            }
+            if (venta.getFecha().isBefore(inicioAñoPasado)) {
+                throw new RuntimeException("La fecha no puede ser del año pasado");
+            }
+        } else {
+            venta.setFecha(ahora);
         }
 
         if (venta.getDetalles() != null) {
@@ -69,6 +80,7 @@ public class VentaService {
         venta.setTotal(totalCalculado);
         return ventaRepository.save(venta);
     }
+    
     @Transactional
     public Venta actualizarVenta(Long id, Venta datosNuevos) {
         Venta ventaExistente = ventaRepository.findById(id)
