@@ -18,10 +18,18 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     // Busca por el ID del objeto 'cliente' dentro de Venta
     List<Venta> findByClienteId(Long clienteId);
     
-    @Query("SELECT SUM(v.total) FROM Venta v")
+    // Cuenta cuántas ventas tienen estado = 0 (pagadas)
+    @Query("SELECT COUNT(v) FROM Venta v WHERE v.estado = 0")
+    Long contarVentasPagadas();
+    
+    // Suma el total de ventas con estado = 0 (pagadas)
+    @Query("SELECT SUM(v.total) FROM Venta v WHERE v.estado = 0")
     Double sumarTotalVentas();
+
+    // Cuenta cuántas ventas se han realizado por mes (solo las pagadas, estado = 0)
     @Query("SELECT MONTH(v.fecha), YEAR(v.fecha), COUNT(v) " +
     	       "FROM Venta v " +
+    	       "WHERE v.estado = 0 " +
     	       "GROUP BY YEAR(v.fecha), MONTH(v.fecha) " +
     	       "ORDER BY YEAR(v.fecha), MONTH(v.fecha)")
     	List<Object[]> contarVentasPorMes();

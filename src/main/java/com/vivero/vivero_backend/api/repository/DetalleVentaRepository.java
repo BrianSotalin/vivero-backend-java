@@ -11,14 +11,19 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long> {
+	
+	// Query para encontrar el producto más vendido considerando solo ventas pagadas (estado = 0)
 	@Query("SELECT d.producto.producto, SUM(d.cantidad) as total " +
 	           "FROM DetalleVenta d " +
+	           "WHERE d.venta.estado = 0 " +
 	           "GROUP BY d.producto.id, d.producto.producto " +
 	           "ORDER BY total DESC")
 	    List<Object[]> encontrarProductoMasVendido();
-	 // Nueva query limitada a top 5
+	    
+	 // Query para encontrar los 5 productos más vendidos considerando solo ventas pagadas (estado = 0)
 	    @Query("SELECT d.producto.producto, SUM(d.cantidad) as total " +
 	           "FROM DetalleVenta d " +
+	           "WHERE d.venta.estado = 0 " +
 	           "GROUP BY d.producto.id, d.producto.producto " +
 	           "ORDER BY total DESC " +
 	           "LIMIT 5")

@@ -20,7 +20,7 @@ public class EstadisticasService {
 
     public DashboardDTO obtenerResumenGeneral() {
         // 1. Número total de tickets/facturas de venta
-        Long conteoVentas = ventaRepository.count();
+        Long conteoVentas = ventaRepository.contarVentasPagadas();
         
         // 2. Ingresos totales reales (Suma de la columna total de ventas)
         Double ingresos = ventaRepository.sumarTotalVentas();
