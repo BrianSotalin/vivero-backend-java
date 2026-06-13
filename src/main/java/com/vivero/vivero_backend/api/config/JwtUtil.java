@@ -1,41 +1,57 @@
 package com.vivero.vivero_backend.api.config;
 
-
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
+
 import com.vivero.vivero_backend.api.model.Usuario;
 
 @Component
 public class JwtUtil {
-    // Esta es una clave secreta de prueba. En producción (Hostinger) cámbiala por algo seguro.
-    private final Key KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION_TIME = 86400000; // 24 horas en milisegundos
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration:86400000}")
+    private long expirationTime;
+
+    private Key getKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(
+            Base64.getEncoder().encodeToString(secret.getBytes())
+        );
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String generateTokenJWT(Usuario usuario) {
         return Jwts.builder()
                 .setSubject(usuario.getUsername())
-                .claim("rol", usuario.getRol()) // ← descomenta esto
+                .claim("rol", usuario.getRol())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(getKey())
                 .compact();
     }
 
-    // Añade este método nuevo
     public String extractRol(String token) {
         return (String) extractAllClaims(token).get("rol");
     }
+
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(KEY).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public boolean isTokenValid(String token, String username) {
